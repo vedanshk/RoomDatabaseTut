@@ -2,6 +2,8 @@ package com.example.roomdatabasetut;
 
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -19,6 +21,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
+import androidx.sqlite.db.SupportSQLiteDatabase;
 
 import com.example.roomdatabasetut.adapter.ContactAdapter;
 import com.example.roomdatabasetut.db.entity.Contact;
@@ -29,6 +32,9 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 public class MainActivity extends AppCompatActivity  implements ContactAdapter.EditContact {
 
     FloatingActionButton floatingActionButton;
@@ -46,9 +52,23 @@ public class MainActivity extends AppCompatActivity  implements ContactAdapter.E
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         Objects.requireNonNull(getSupportActionBar()).setTitle("My Contact Manager");
+
+        RoomDatabase.Callback callback = new RoomDatabase.Callback() {
+            @Override
+            public void onCreate(@NonNull SupportSQLiteDatabase db) {
+                super.onCreate(db);
+
+            }
+
+            @Override
+            public void onOpen(@NonNull SupportSQLiteDatabase db) {
+                super.onOpen(db);
+            }
+        }
         contactAppDatabase = Room.databaseBuilder(this, ContactAppDatabase.class, "ContactDB").allowMainThreadQueries().build();
         databaseHelper = contactAppDatabase.getContactDao();
-        contacts = databaseHelper.getAllContacts();
+
+        DisplayAllContactINBackGround();
         contactAdapter = new ContactAdapter(this);
         contactAdapter.setContacts((ArrayList<Contact>) contacts);
         recyclerView = findViewById(R.id.recyclerView);
@@ -148,6 +168,20 @@ public class MainActivity extends AppCompatActivity  implements ContactAdapter.E
         databaseHelper.deleteContact(contact);
 
         contactAdapter.notifyDataSetChanged();
+    }
+
+
+    private void  DisplayAllContactINBackGround(){
+
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
+        executorService.execute(() -> {
+            contacts = databaseHelper.getAllContacts();
+            handler.post(() -> contactAdapter.notifyDataSetChanged());
+
+
+        });
+
     }
 
     @Override
