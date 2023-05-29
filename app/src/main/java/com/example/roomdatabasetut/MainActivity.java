@@ -17,23 +17,28 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.room.Room;
+import androidx.room.RoomDatabase;
 
 import com.example.roomdatabasetut.adapter.ContactAdapter;
 import com.example.roomdatabasetut.db.entity.Contact;
+import com.example.roomdatabasetut.db.entity.ContactAppDatabase;
+import com.example.roomdatabasetut.db.entity.ContactDao;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 public class MainActivity extends AppCompatActivity  implements ContactAdapter.EditContact {
 
     FloatingActionButton floatingActionButton;
-    ArrayList<Contact> contacts = new ArrayList<>();
+    List<Contact> contacts = new ArrayList<>();
 
     RecyclerView recyclerView;
 
     ContactAdapter contactAdapter;
-    DatabaseHelper databaseHelper;
-   
+    ContactDao databaseHelper;
+    ContactAppDatabase contactAppDatabase;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,11 +46,11 @@ public class MainActivity extends AppCompatActivity  implements ContactAdapter.E
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         Objects.requireNonNull(getSupportActionBar()).setTitle("My Contact Manager");
-        databaseHelper = new DatabaseHelper(this);
+        contactAppDatabase = Room.databaseBuilder(this, ContactAppDatabase.class, "ContactDB").allowMainThreadQueries().build();
+        databaseHelper = contactAppDatabase.getContactDao();
         contacts = databaseHelper.getAllContacts();
-
         contactAdapter = new ContactAdapter(this);
-        contactAdapter.setContacts(contacts);
+        contactAdapter.setContacts((ArrayList<Contact>) contacts);
         recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setAdapter(contactAdapter);
         recyclerView.setLayoutManager( new LinearLayoutManager(this));
@@ -114,12 +119,13 @@ public class MainActivity extends AppCompatActivity  implements ContactAdapter.E
 
     private void CreateContact(String name, String email) {
 
-        int id = (int) databaseHelper.insertContact(name , email);
+
 
         Contact contact = new Contact();
         contact.setName(name);
         contact.setEmail(email);
-        contact.setId(id);
+        contact.setId(0);
+        databaseHelper.addContact(contact);
         contacts.add(contact);
 
         contactAdapter.notifyDataSetChanged();

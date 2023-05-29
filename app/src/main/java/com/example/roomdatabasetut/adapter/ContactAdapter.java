@@ -15,6 +15,7 @@ import com.example.roomdatabasetut.R;
 import com.example.roomdatabasetut.db.entity.Contact;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactViewHolder> {
 
@@ -23,7 +24,7 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactV
     }
 
     private final Context context;
-    private ArrayList<Contact> contacts;
+    private List<Contact> contacts;
 
     public ContactAdapter(Context context) {
         this.context = context;
