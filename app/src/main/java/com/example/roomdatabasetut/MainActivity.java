@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -37,6 +38,7 @@ import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity  implements ContactAdapter.EditContact {
 
+    private static final String TAG = "MainActivity";
     FloatingActionButton floatingActionButton;
     List<Contact> contacts = new ArrayList<>();
 
@@ -57,15 +59,21 @@ public class MainActivity extends AppCompatActivity  implements ContactAdapter.E
             @Override
             public void onCreate(@NonNull SupportSQLiteDatabase db) {
                 super.onCreate(db);
-
+                CreateContact("Bill Gates" , "bill_gates@microsoft.com");
+                CreateContact("Elon Musk" , "elon_musk@tesla.com");
+                CreateContact("Mark Joker" , "mark_joker@facebook.com");
+                CreateContact("Larry Page" , "larry_page@google.com");
+                CreateContact("Satoshi Nakamoto" , "satoshi_nakamoto@bitcoin.com");
+                Log.d(TAG, "onCreate: Database has been created.");
             }
 
             @Override
             public void onOpen(@NonNull SupportSQLiteDatabase db) {
                 super.onOpen(db);
+                Log.d(TAG, "onOpen: Database has been Opened.");
             }
-        }
-        contactAppDatabase = Room.databaseBuilder(this, ContactAppDatabase.class, "ContactDB").allowMainThreadQueries().build();
+        };
+        contactAppDatabase = Room.databaseBuilder(this, ContactAppDatabase.class, "ContactDB").addCallback(callback).build();
         databaseHelper = contactAppDatabase.getContactDao();
 
         DisplayAllContactINBackGround();
